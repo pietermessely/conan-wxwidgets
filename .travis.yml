@@ -1,1 +1,1 @@
-import: bincrafters/templates:.ci/travis-macos-splitByBuildTypes.yml@master
+import: travis-template.yml
