@@ -4,6 +4,7 @@ import os
 
 class wxWidgetsConan(ConanFile):
     name = "wxwidgets"
+    version = "3.1.3"
     description = "wxWidgets is a C++ library that lets developers create applications for Windows, macOS, " \
                   "Linux and other platforms with a single code base."
     topics = ("conan", "wxwidgets", "gui", "ui")
@@ -113,7 +114,7 @@ class wxWidgetsConan(ConanFile):
                 elif self.settings.arch == 'x86_64':
                     arch_suffix = ':amd64'
                 packages = ['libx11-dev%s' % arch_suffix,
-                            'libgtk2.0-dev%s' % arch_suffix]
+                            'libgtk-3-dev%s' % arch_suffix]
                 # TODO : GTK3
                 # packages.append('libgtk-3-dev%s' % arch_suffix)
                 if self.options.secretstore:
@@ -123,7 +124,7 @@ class wxWidgetsConan(ConanFile):
                                      'libgl1-mesa-dev%s' % arch_suffix])
                 if self.options.webview:
                     packages.extend(['libsoup2.4-dev%s' % arch_suffix,
-                                     'libwebkitgtk-dev%s' % arch_suffix])
+                                     'libwebkit2gtk-4.0-dev%s' % arch_suffix])
                 # TODO : GTK3
                 #                    'libwebkitgtk-3.0-dev%s' % arch_suffix])
                 if self.options.mediactrl:
@@ -189,7 +190,7 @@ class wxWidgetsConan(ConanFile):
             cmake.definitions['wxBUILD_MSVC_MULTIPROC'] = True
         if self.settings.os == 'Linux':
             # TODO : GTK3
-            # cmake.definitions['wxBUILD_TOOLKIT'] = 'gtk3'
+            cmake.definitions['wxBUILD_TOOLKIT'] = 'gtk3'
             cmake.definitions['wxUSE_CAIRO'] = self.options.cairo
         # Disable some optional libraries that will otherwise lead to non-deterministic builds
         if self.settings.os != "Windows":
@@ -285,7 +286,7 @@ class wxWidgetsConan(ConanFile):
         
         if self.settings.os == 'Linux':
             prefix = 'wx_'
-            toolkit = 'gtk2'
+            toolkit = 'gtk3'
             version = ''
             suffix = version_suffix_major_minor
         elif self.settings.os == 'Macos':
@@ -352,7 +353,7 @@ class wxWidgetsConan(ConanFile):
             self.cpp_info.defines.append('WXUSINGDLL')
         if self.settings.os == 'Linux':
             self.cpp_info.defines.append('__WXGTK__')
-            self.add_libraries_from_pc('gtk+-2.0')
+            self.add_libraries_from_pc('gtk+-3.0')
             self.add_libraries_from_pc('x11')
             self.cpp_info.libs.extend(['dl', 'pthread', 'SM'])
         elif self.settings.os == 'Macos':
