@@ -155,7 +155,9 @@ class wxWidgetsConan(ConanFile):
             self.requires('expat/2.2.7')
 
     def source(self):
-        tools.get(**self.conan_data["sources"][self.version])
+#        tools.get(**self.conan_data["sources"][self.version])
+        tools.get("https://github.com/wxWidgets/wxWidgets/archive/v3.1.4.tar.gz", sha256='f2698297b2d2c6d2372c23144c133e531248a64286c78ae17179155c94971d6f')
+        
         extracted_dir = "wxWidgets-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
@@ -176,7 +178,7 @@ class wxWidgetsConan(ConanFile):
 
         # generic build options
         cmake.definitions['wxBUILD_SHARED'] = self.options.shared
-        cmake.definitions['wxBUILD_SAMPLES'] = 'OFF'
+        cmake.definitions['wxBUILD_SAMPLES'] = 'SOME'
         cmake.definitions['wxBUILD_TESTS'] = 'OFF'
         cmake.definitions['wxBUILD_DEMOS'] = 'OFF'
         cmake.definitions['wxBUILD_INSTALL'] = True
@@ -218,6 +220,7 @@ class wxWidgetsConan(ConanFile):
         cmake.definitions['wxUSE_PROPGRID'] = self.options.propgrid
         cmake.definitions['wxUSE_DEBUGREPORT'] = self.options.debugreport
         cmake.definitions['wxUSE_RIBBON'] = self.options.ribbon
+        cmake.definitions['wxUSE_REGEX'] = 'OFF' #'builtin'
         cmake.definitions['wxUSE_RICHTEXT'] = self.options.richtext
         cmake.definitions['wxUSE_SOCKETS'] = self.options.sockets
         cmake.definitions['wxUSE_STC'] = self.options.stc
@@ -353,7 +356,9 @@ class wxWidgetsConan(ConanFile):
             self.cpp_info.defines.append('WXUSINGDLL')
         if self.settings.os == 'Linux':
             self.cpp_info.defines.append('__WXGTK__')
+            self.cpp_info.defines.append('__WXGTK3__')
             self.add_libraries_from_pc('gtk+-3.0')
+            self.add_libraries_from_pc('webkit2gtk-4.0')
             self.add_libraries_from_pc('x11')
             self.cpp_info.libs.extend(['dl', 'pthread', 'SM'])
         elif self.settings.os == 'Macos':
