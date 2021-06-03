@@ -5,10 +5,9 @@ import os
 class wxWidgetsConan(ConanFile):
     name = "wxwidgets"
     version = "3.1.4"
-    description = "wxWidgets is a C++ library that lets developers create applications for Windows, macOS, " \
-                  "Linux and other platforms with a single code base."
+    description = "wxWidgets."
     topics = ("conan", "wxwidgets", "gui", "ui")
-    url = "https://github.com/bincrafters/conan-wxwidgets"
+    url = ""
     homepage = "https://www.wxwidgets.org"
     license = "wxWidgets"
     exports_sources = ["CMakeLists.txt"]
@@ -16,36 +15,20 @@ class wxWidgetsConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     _cmake = None
 
-    # 3rd-party dependencies
-    #
-    # Specify "sys" if you want CMake to find_package for a dependency
-    # which was installed outside of Conan.
-    #
-    # Specify one of the library names such as "libjpeg-turbo" if you
-    # want Conan to obtain that library, and have CMake use that via find_package.
-    #
-    # In either case, the string "sys" will be passed to CMake in the configure step
-    #
-    # Specify "off" to compile without support for a particular library/format
-    #
-    # This package is intentionally not capable of using the git submodules.
-    # It gets sources from github release, which do not include submodule content.
-    # For this reason, "builtin" is not a valid value for these options when using Conan.
-
     options = {"shared": [True, False],
                "fPIC": [True, False],
-               "unicode": [True, False],
+               "unicode": ['ON', 'OFF'],
                "compatibility": ["2.8", "3.0", "3.1"],
-               "zlib": ["off", "sys", "zlib"],
-               "png": ["off", "sys", "libpng"],
-               "jpeg": ["off", "sys", "libjpeg", "libjpeg-turbo", "mozjpeg"],
-               "tiff": ["off", "sys", "libtiff"],
-               "expat": ["off", "sys", "expat"],
+               "zlib": ['OFF', "sys", "builtin", "zlib"],
+               "png": ['OFF', "sys", "builtin", "libpng"],
+               "jpeg": ['OFF', "sys", "builtin", "libjpeg", "libjpeg-turbo", "mozjpeg"],
+               "tiff": ['OFF', "sys", "builtin", "libtiff"],
+               "expat": ['OFF', "sys", "builtin", "expat"],
                "secretstore": [True, False],
                "aui": [True, False],
                "opengl": [True, False],
                "html": [True, False],
-               "mediactrl": [True, False],  # disabled by default as wxWidgets still uses deprecated GStreamer 0.10
+               "mediactrl": [True, False],  
                "propgrid": [True, False],
                "debugreport": [True, False],
                "ribbon": [True, False],
@@ -66,13 +49,13 @@ class wxWidgetsConan(ConanFile):
     default_options = {
                "shared": False,
                "fPIC": True,
-               "unicode": True,
+               "unicode": 'ON',
                "compatibility": "3.0",
-               "zlib": "zlib",
-               "png": "libpng",
-               "jpeg": "libjpeg",
-               "tiff": "libtiff",
-               "expat": "expat",
+               "zlib": "sys",
+               "png": "sys",
+               "jpeg": "OFF", # should be sys 
+               "tiff": 'OFF',
+               "expat": "sys",
                "secretstore": True,
                "aui": True,
                "opengl": True,
@@ -105,59 +88,31 @@ class wxWidgetsConan(ConanFile):
         if self.settings.os != 'Linux':
             self.options.remove('cairo')
 
-    def system_requirements(self):
-        if self.settings.os == 'Linux' and tools.os_info.is_linux:
-            if tools.os_info.with_apt:
-                installer = tools.SystemPackageTool()
-                if self.settings.arch == 'x86':
-                    arch_suffix = ':i386'
-                elif self.settings.arch == 'x86_64':
-                    arch_suffix = ':amd64'
-                packages = ['libx11-dev%s' % arch_suffix,
-                            'libgtk-3-dev%s' % arch_suffix]
-                # TODO : GTK3
-                # packages.append('libgtk-3-dev%s' % arch_suffix)
-                if self.options.secretstore:
-                    packages.append('libsecret-1-dev%s' % arch_suffix)
-                if self.options.opengl:
-                    packages.extend(['mesa-common-dev%s' % arch_suffix,
-                                     'libgl1-mesa-dev%s' % arch_suffix])
-                if self.options.webview:
-                    packages.extend(['libsoup2.4-dev%s' % arch_suffix,
-                                     'libwebkit2gtk-4.0-dev%s' % arch_suffix])
-                # TODO : GTK3
-                #                    'libwebkitgtk-3.0-dev%s' % arch_suffix])
-                if self.options.mediactrl:
-                    packages.extend(['libgstreamer0.10-dev%s' % arch_suffix,
-                                     'libgstreamer-plugins-base0.10-dev%s' % arch_suffix])
-                if self.options.cairo:
-                    packages.append('libcairo2-dev%s' % arch_suffix)
-                for package in packages:
-                    installer.install(package)
+    #def build_requirements(self):
+    #    self.build_requires("ninja/1.10.1")
 
-    def build_requirements(self):
-        self.build_requires("ninja/1.10.1")
-
-    def requirements(self):
-        if self.options.png == 'libpng':
-            self.requires('libpng/1.6.37')
-        if self.options.jpeg == 'libjpeg':
-            self.requires('libjpeg/9d')
-        elif self.options.jpeg == 'libjpeg-turbo':
-            self.requires('libjpeg-turbo/2.0.5')
-        elif self.options.jpeg == 'mozjpeg':
-            self.requires('mozjpeg/3.3.1')
-        if self.options.tiff == 'libtiff':
-            self.requires('libtiff/4.0.9')
-        if self.options.zlib == 'zlib':
-            self.requires('zlib/1.2.11')
-        if self.options.expat == 'expat':
-            self.requires('expat/2.2.7')
+    # i plan to use the below as well, but for now using the same as my system
+    #def requirements(self):
+#        if self.options.jpeg == 'libjpeg':
+#            self.requires('libjpeg/9d')
+#        if self.options.png == 'libpng':
+#            self.requires('libpng/1.6.37')
+#        if self.options.jpeg == 'libjpeg':
+#            self.requires('libjpeg/9d')
+#        elif self.options.jpeg == 'libjpeg-turbo':
+#            self.requires('libjpeg-turbo/2.0.5')
+#        elif self.options.jpeg == 'mozjpeg':
+#            self.requires('mozjpeg/3.3.1')
+#        if self.options.tiff == 'libtiff':
+#            self.requires('libtiff/4.0.9')
+#        if self.options.zlib == 'zlib':
+#            self.requires('zlib/1.2.11')
+#        if self.options.expat == 'expat':
+#            self.requires('expat/2.2.7')
 
     def source(self):
-#        tools.get(**self.conan_data["sources"][self.version])
+        #tools.get(**self.conan_data["sources"][self.version])
         tools.get("https://github.com/wxWidgets/wxWidgets/archive/v3.1.4.tar.gz", sha256='f2698297b2d2c6d2372c23144c133e531248a64286c78ae17179155c94971d6f')
-        
         extracted_dir = "wxWidgets-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
@@ -178,7 +133,7 @@ class wxWidgetsConan(ConanFile):
 
         # generic build options
         cmake.definitions['wxBUILD_SHARED'] = self.options.shared
-        cmake.definitions['wxBUILD_SAMPLES'] = 'SOME'
+        cmake.definitions['wxBUILD_SAMPLES'] = 'SOME' #'SOME' # should be OFF
         cmake.definitions['wxBUILD_TESTS'] = 'OFF'
         cmake.definitions['wxBUILD_DEMOS'] = 'OFF'
         cmake.definitions['wxBUILD_INSTALL'] = True
@@ -202,11 +157,12 @@ class wxWidgetsConan(ConanFile):
             cmake.definitions['wxUSE_LIBMSPACK'] = 'OFF'
             cmake.definitions['wxUSE_LIBGNOMEVFS'] = 'OFF'
 
-        cmake.definitions['wxUSE_LIBPNG'] = 'sys' if self.options.png != 'off' else 'OFF'
-        cmake.definitions['wxUSE_LIBJPEG'] = 'sys' if self.options.jpeg != 'off' else 'OFF'
-        cmake.definitions['wxUSE_LIBTIFF'] = 'sys' if self.options.tiff != 'off' else 'OFF'
-        cmake.definitions['wxUSE_ZLIB'] = 'sys' if self.options.zlib != 'off' else 'OFF'
-        cmake.definitions['wxUSE_EXPAT'] = 'sys' if self.options.expat != 'off' else 'OFF'
+        cmake.definitions['wxUSE_LIBPNG'] = 'sys' if self.options.png != 'OFF' else 'OFF'
+        cmake.definitions['wxUSE_LIBJPEG'] = 'sys' if self.options.jpeg != 'OFF' else 'OFF'
+        cmake.definitions['wxUSE_LIBTIFF'] = 'sys' if self.options.tiff != 'OFF' else 'OFF'
+        cmake.definitions['wxUSE_ZLIB'] = 'sys' if self.options.zlib != 'OFF' else 'OFF'
+        cmake.definitions['wxUSE_EXPAT'] = 'sys' if self.options.expat != 'OFF' else 'OFF'
+        
 
         # wxWidgets features
         cmake.definitions['wxUSE_UNICODE'] = self.options.unicode
@@ -308,10 +264,24 @@ class wxWidgetsConan(ConanFile):
 
         def library_pattern(library):
             return '{prefix}{toolkit}{version}{unicode}{debug}_%s{suffix}' % library
+            
+        def external_library_pattern(library):
+            return 'wx%s{unicode}{debug}{suffix}' % library 
 
+        # pim: perhaps also no debug ...
+        def external_library_pattern_no_unicode(library):
+            return 'wx%s{debug}{suffix}' % library 
+            
         libs = ['{prefix}base{version}{unicode}{debug}{suffix}',
                 library_pattern('core'),
                 library_pattern('adv')]
+        
+        #libs.append(external_library_pattern_no_unicode('scintilla'))
+        if self.options.stc:
+            if not self.options.shared:
+                scintilla_suffix = '{debug}' if self.settings.os == "Windows" else '{suffix}'
+                libs.append('wxscintilla' + scintilla_suffix)
+            libs.append(library_pattern('stc'))
         if self.options.sockets:
             libs.append(base_library_pattern('net'))
         if self.options.xml:
@@ -332,15 +302,13 @@ class wxWidgetsConan(ConanFile):
             libs.append(library_pattern('ribbon'))
         if self.options.richtext:
             libs.append(library_pattern('richtext'))
-        if self.options.stc:
-            if not self.options.shared:
-                scintilla_suffix = '{debug}' if self.settings.os == "Windows" else '{suffix}'
-                libs.append('wxscintilla' + scintilla_suffix)
-            libs.append(library_pattern('stc'))
         if self.options.webview:
             libs.append(library_pattern('webview'))
         if self.options.xrc:
             libs.append(library_pattern('xrc'))
+        #pim:addded
+#        libs.append(external_library_pattern('regex'))
+        
         for lib in reversed(libs):
             self.cpp_info.libs.append(lib.format(prefix=prefix,
                                                  toolkit=toolkit,
@@ -352,92 +320,14 @@ class wxWidgetsConan(ConanFile):
         self.cpp_info.defines.append('wxUSE_GUI=1')
         if self.settings.build_type == 'Debug':
             self.cpp_info.defines.append('__WXDEBUG__')
-        if self.options.shared:
-            self.cpp_info.defines.append('WXUSINGDLL')
         if self.settings.os == 'Linux':
             self.cpp_info.defines.append('__WXGTK__')
             self.cpp_info.defines.append('__WXGTK3__')
             self.add_libraries_from_pc('gtk+-3.0')
             self.add_libraries_from_pc('webkit2gtk-4.0')
             self.add_libraries_from_pc('x11')
-            self.cpp_info.libs.extend(['dl', 'pthread', 'SM'])
-        elif self.settings.os == 'Macos':
-            self.cpp_info.defines.extend(['__WXMAC__', '__WXOSX__', '__WXOSX_COCOA__'])
-            for framework in ['Carbon',
-                              'Cocoa',
-                              'AudioToolbox',
-                              'OpenGL',
-                              'AVKit',
-                              'AVFoundation',
-                              'Foundation',
-                              'IOKit',
-                              'ApplicationServices',
-                              'CoreText',
-                              'CoreGraphics',
-                              'CoreServices',
-                              'CoreMedia',
-                              'Security',
-                              'ImageIO',
-                              'System',
-                              'WebKit']:
-                self.cpp_info.exelinkflags.append('-framework %s' % framework)
-            self.cpp_info.sharedlinkflags = self.cpp_info.exelinkflags
-        elif self.settings.os == 'Windows':
-            # see cmake/init.cmake
-            compiler_prefix = {'Visual Studio': 'vc',
-                               'gcc': 'gcc',
-                               'clang': 'clang'}.get(str(self.settings.compiler))
-
-            arch_suffix = '_x64' if self.settings.arch == 'x86_64' else ''
-            lib_suffix = '_dll' if self.options.shared else '_lib'
-            libdir = '%s%s%s' % (compiler_prefix, arch_suffix, lib_suffix)
-            libdir = os.path.join('lib', libdir)
-            self.cpp_info.bindirs.append(libdir)
-            self.cpp_info.libdirs.append(libdir)
-            self.cpp_info.defines.append('__WXMSW__')
-            # disable annoying auto-linking
-            self.cpp_info.defines.extend(['wxNO_NET_LIB',
-                                          'wxNO_XML_LIB',
-                                          'wxNO_REGEX_LIB',
-                                          'wxNO_ZLIB_LIB',
-                                          'wxNO_JPEG_LIB',
-                                          'wxNO_PNG_LIB',
-                                          'wxNO_TIFF_LIB',
-                                          'wxNO_ADV_LIB',
-                                          'wxNO_HTML_LIB',
-                                          'wxNO_GL_LIB',
-                                          'wxNO_QA_LIB',
-                                          'wxNO_XRC_LIB',
-                                          'wxNO_AUI_LIB',
-                                          'wxNO_PROPGRID_LIB',
-                                          'wxNO_RIBBON_LIB',
-                                          'wxNO_RICHTEXT_LIB',
-                                          'wxNO_MEDIA_LIB',
-                                          'wxNO_STC_LIB',
-                                          'wxNO_WEBVIEW_LIB'])
-            self.cpp_info.libs.extend(['kernel32',
-                                       'user32',
-                                       'gdi32',
-                                       'comdlg32',
-                                       'winspool',
-                                       'shell32',
-                                       'comctl32',
-                                       'ole32',
-                                       'oleaut32',
-                                       'uuid',
-                                       'wininet',
-                                       'rpcrt4',
-                                       'winmm',
-                                       'advapi32',
-                                       'wsock32'])
-            # Link a few libraries that are needed when using gcc on windows
-            if self.settings.compiler == 'gcc':
-                self.cpp_info.libs.extend(['uxtheme',
-                                           'version',
-                                           'shlwapi',
-                                           'oleacc'])
-        if self.settings.compiler == 'Visual Studio':
-            self.cpp_info.includedirs.append(os.path.join('include', 'msvc'))
-        elif self.settings.os != 'Windows':
+            self.cpp_info.libs.extend(['dl', 'pthread', 'png'])
+            #self.cpp_info.libs.extend(['dl', 'pthread', 'SM'])
+        if self.settings.os != 'Windows':
             unix_include_path = os.path.join("include", "wx{}".format(version_suffix_major_minor))
             self.cpp_info.includedirs = [unix_include_path] + self.cpp_info.includedirs
