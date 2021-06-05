@@ -6,6 +6,8 @@
 #include <wx/stc/stc.h>
 #endif
 
+#include <iostream>
+
 int main()
 {
     int argc = 0;
@@ -23,5 +25,6 @@ int main()
     wxStyledTextCtrl * stc = new wxStyledTextCtrl();
 #endif
     wxEntryCleanup();
+    std::cout << "Success" << std::endl;
     return EXIT_SUCCESS;
 }
